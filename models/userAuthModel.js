@@ -13,6 +13,12 @@ const authSchema = new mongoose.Schema({
         validate: [validator.isEmail, "Invalid email, Please provide us with a valid email"]
     },
     password: { type: String, required: true, minlength: [8, "A password must have a min length of 8 character"], select: false },
+    role: {
+        type: String,
+        enum: ['user', 'admin', 'recipe-guide'],
+        default: 'user', 
+        require: true
+    }
     //     passwordConfirm: {
     //         type: String, required: true, minlength: 8,
     //         validator: function (val) {
@@ -32,10 +38,10 @@ authSchema.pre('save', async function (next) {
 // Static method to login user
 authSchema.statics.login = async function (email, password) {
     // console.log(email, password)
-const user = await this.findOne({ email }).select('+password');
+    const user = await this.findOne({ email }).select('+password');
 
-console.log(user)
-if (user) {
+    console.log(user)
+    if (user) {
         const auth = await bcrypt.compare(password, user.password);
         if (auth) {
             return user;

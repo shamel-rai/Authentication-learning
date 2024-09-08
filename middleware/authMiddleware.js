@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/userAuthModel')
-
+const AppError = require('../utils/appError');
+const catchAsync = require('../utils/catchAsync');
 
 const jwtSecret = process.env.JWT_SECRET;
 const requireAuth = (req, res, next) => {
@@ -20,6 +21,8 @@ const requireAuth = (req, res, next) => {
         res.redirect('/api/v1/login');
     }
 }
+
+
 // check current user
 const checkUser = (req, res, next) => {
     const token = req.cookies.jwt;
@@ -46,4 +49,42 @@ const checkUser = (req, res, next) => {
     }
 };
 
-module.exports = { requireAuth, checkUser };
+const requireRole = (roles) => {
+    return async (req, res, next) => {
+        const token = req.cookies.jwt;
+        if (token) {
+            jwt.verify(token, jwtSecret, async (err, decodedToken) => {
+                if (err) {
+                    console.log('Token verification failed');
+                    res.redirect('/api/v1/login')
+                }
+                else {
+                    try {
+                        const user = await User.findById(decodedToken.id);
+                        if (user && roles.includes(user.role)) {
+                            req.user = user;
+                            next()
+                        } else {
+                            res.status(403).json({
+                                status: 'failed',
+                                message: 'Permission denied'
+                            })
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        res.status(500).send('Internal server Error')
+
+                    }
+                }
+            });
+        }
+        else {
+            console.log('No Token found');
+
+            res.redirect('/api/v1/login')
+        }
+    };
+};
+
+
+module.exports = { requireAuth, checkUser, requireRole };

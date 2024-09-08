@@ -1,5 +1,5 @@
 const express = require('express');
-const { requireAuth, checkUser } = require('../middleware/authMiddleware');
+const { requireAuth, checkUser, requireRole } = require('../middleware/authMiddleware');
 const { getSignup, getLogin, postSignup, postLogin, getHomepage, getSmoothies, getLogout } = require('../controller/userController');
 
 const router = express.Router();
@@ -7,8 +7,9 @@ const router = express.Router();
 // Define routes
 router.get('*', checkUser)
 
+
 router.get('/', getHomepage);
-router.get('/smoothies', requireAuth, getSmoothies);
+router.get('/smoothies', requireRole('user', 'admin'), requireAuth, getSmoothies);
 router.route('/signup')
     .get(getSignup)
     .post(postSignup);

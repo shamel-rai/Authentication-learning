@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/userAuthModel');
 
+
 // Handle errors
 const handleErrors = err => {
     console.log(err.message, err.code);
@@ -103,7 +104,7 @@ exports.postSignup = async (req, res, next) => {
 
 exports.postLogin = async (req, res, next) => {
     const { email, password } = req.body;
-    console.log('Email and Password:', email, password); // Debug log to see incoming values
+    // console.log('Email and Password:', email, password); // Debug log to see incoming values
 
     try {
         const user = await User.login(email, password); // Call the login method from the model
@@ -134,3 +135,6 @@ exports.getLogout = async (req, res, next) => {
     res.cookie('jwt', '', { maxAge: 1 })
     res.redirect('/api/v1/')
 }
+
+
+
